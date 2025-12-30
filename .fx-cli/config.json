@@ -1,0 +1,28 @@
+{
+  "auth": {
+    "domain": "https://eu.sharecrm.com",
+    "certificate": "ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnpkV0lpT2lKU1pYRjFaWE4wVkc5clpXNGlMQ0pwYzNNaU9pSkRSVkF0VTJWeWRtVnlJaXdpWlc1MFpYSndjbWx6WlVGalkyOTFiblFpT2lKbWEzUmxjM1E0TlRFNUlpd2laVzUwWlhKd2NtbHpaVWxrSWpvMk56QXdNREl3Tnl3aWMyVnpjMmx2Ymtsa0lqb2lOemcwTm1ObE4yWXRZVEExWXkwME5EbGtMV0l5WW1ZdFpUa3laR1pqTkdVMFpEUTFJaXdpWlhod0lqb3pPRFE1TlRBNU1Ua3hMQ0oxYzJWeVNXUWlPakV3TURBc0ltbGhkQ0k2TVRjMk56QTNOREk1TlgwLmRtNmFmMWo0RG05dVZNRGNwQ3VaTW91MmxVNkRPRVAySjlCLUQ1QnNvSzA=",
+    "lastAuth": "2025-12-30T06:03:55.114Z"
+  },
+  "project": {
+    "rootDir": "/Users/jenpeng/Desktop/纷享销客工作/Project/My/shareCRM",
+    "defaultType": "component",
+    "defaultOutputDir": "./fx-app/main"
+  },
+  "jenkins": {
+    "url": "",
+    "username": "",
+    "token": "",
+    "jobPrefix": "fx-"
+  },
+  "logging": {
+    "level": "info",
+    "file": "/Users/jenpeng/Desktop/纷享销客工作/Project/My/shareCRM/.fx-cli/logs/fx-cli.log",
+    "enableConsole": true,
+    "enableFile": false
+  },
+  "cache": {
+    "enabled": true,
+    "maxAge": 86400000
+  }
+}
