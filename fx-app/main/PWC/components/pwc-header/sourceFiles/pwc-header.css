@@ -1,0 +1,38 @@
+/* ===== 基础 ===== */
+.pwc-header { background: #fff; font-family: Arial, sans-serif; }
+.pwc-header__container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+/* ===== 主导航 ===== */
+.pwc-header__main-nav-area { background: #ffffff; border-bottom: 1px solid #e9ecef; }
+.pwc-header__main-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+.pwc-header__logo { font-size: 32px; font-weight: bold; color: #000; }
+
+/* 桌面横向菜单 */
+.pwc-header__nav-list { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; }
+.pwc-header__nav-item { font-size: 15px; color: #000; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: color 0.3s; }
+.pwc-header__nav-item:hover { color: #007bff; }
+
+/* 登录按钮 */
+.pwc-header__login-btn { background: #007bff; color: #fff; border: none; padding: 8px 22px; border-radius: 4px; cursor: pointer; }
+.pwc-header__mobile-toggle { display: none; font-size: 24px; background: none; border: none; }
+
+/* ===== 横幅 ===== */
+.pwc-header__banner { background: #ffffff; text-align: center; padding: 60px 20px 80px; }
+.pwc-header__play { background: none; border: 1px solid #007bff; color: #007bff; padding: 10px 24px; border-radius: 4px; cursor: pointer; margin-bottom: 24px; font-weight: 600; }
+.pwc-header__banner-title { font-size: 42px; font-weight: 700; color: #222; margin-bottom: 12px; }
+.pwc-header__sub { font-size: 18px; color: #555; margin-bottom: 40px; }
+
+/* ===== 搜索 ===== */
+.pwc-header__search { display: flex; justify-content: center; gap: 10px; max-width: 600px; margin: 0 auto; }
+.pwc-header__search-input { flex: 1; padding: 14px 20px; border: 1px solid #ced4da; border-radius: 4px; font-size: 16px; }
+.pwc-header__search-button { background: #007bff; color: #fff; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+
+/* ===== 移动端 ===== */
+@media (max-width: 768px) {
+  .pwc-header__nav-list { display: none; }
+  .pwc-header__login-btn { display: none; }
+  .pwc-header__mobile-toggle { display: block; }
+  .pwc-header__banner-title { font-size: 28px; }
+  .pwc-header__search { flex-direction: column; }
+  .pwc-header__search-button { width: 100%; }
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PluginBundle>
+  <scopeObjects>
+    <object>ALL</object>
+  </scopeObjects>
+  <description></description>
+  <client>web</client>
+  <entryFileName>index.js</entryFileName>
+  <type>list_plugin</type>
+</PluginBundle>

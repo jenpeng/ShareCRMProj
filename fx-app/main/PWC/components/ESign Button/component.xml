@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ComponentBundle>
+  <scopes>
+    <scope target="ObjectDetailPage">
+      <objects>
+        <object>ESign_Record__c</object>
+      </objects>
+    </scope>
+    <scope target="ObjectListPage">
+      <objects>
+        <object>ESign_Record__c</object>
+      </objects>
+    </scope>
+  </scopes>
+  <clients>
+    <client>web</client>
+  </clients>
+  <description></description>
+  <entryFileName>SelectionPage.vue</entryFileName>
+  <type>vue</type>
+</ComponentBundle>

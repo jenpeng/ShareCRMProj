@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ComponentBundle>
+  <scopes>
+    <scope target="Website">*</scope>
+  </scopes>
+  <clients>
+    <client>web</client>
+  </clients>
+  <description></description>
+  <entryFileName>index.vue</entryFileName>
+  <type>vue</type>
+</ComponentBundle>

@@ -1,0 +1,158 @@
+{
+  "Result": {
+    "FailureCode": 0,
+    "StatusCode": 0,
+    "UserInfo": {
+      "EmployeeID": 1000,
+      "EnterpriseAccount": "fktest8519"
+    }
+  },
+  "Value": {
+    "list": [
+      {
+        "name": "Generate Webhook Url",
+        "apiName": "generateWebhookUrl__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName Generate Webhook Url\n * @description Generate Webhook Url\n * @createTime 2025-10-15\n * @bindingObjectLabel Webhook URL\n * @bindingObjectApiName WebhookURL__c\n * @函数需求编号\n */\nString apiName = context.data.object_describe_api_name as String;\n\nString baseUrl = \"https://www.kitdoll.com\"; \nString instanceURL = \"https://www.fxiaoke.com\";\nString saveToken2GateUrl = \"https://www.kitdoll.com/admin/token\"\n\nString certification = context.data.certification__c as String;\nString keyId = context.data._id as String;\nString webhookUrl = \"\"\nString methodCls = context.data.webhookMethods__c as String;\nString webhookToken = \"\"\nString dataToken = context.data.token__c as String\nif (dataToken == null){\n  if (certification != null && webhookToken != null) {\n    String tokenBody1 = '{\"method\":'+methodCls+',\"baseurl\":'+instanceURL+',\"cert\" :' +certification+'}' \n    webhookToken = Fx.crypto.MD5.encode(tokenBody1) as String\n    // String tokenBody = '{\"token\":'+webhookToken+',\"method\":'+methodCls+',\"baseurl\":'+baseUrl+',\"cert\" :' +certification+'}' \n    webhookUrl = baseUrl + \"/webhook/\" + webhookToken;\n    log.info(\"webhookurl: \"+ webhookUrl)\n  } else {\n    log.info(\"Certification is null, cannot generate token.\")\n  }\n  \n  // 保存到网关的请求体\n  Map map = [\"token\": webhookToken, \"method\": methodCls,\"baseurl\": instanceURL,\"cert\":certification]\n  StringBody body = StringBody.builder().content(map).build()\n  \n  Request request = Request.builder()\n                  .method(\"POST\")\n                  .url(saveToken2GateUrl)\n                  .timeout(7000)\n                  .retryCount(0)\n                  .header(\"Content-Type\", \"application/json\")\n                  .body(body)\n                  .build()\n  def(Boolean error, HttpResult result, String message) = Fx.http.execute(request)\n          \n  if (error || result.statusCode != 200){\n    log.error(\"http request error01: \"+ error +\" errorMessage: \" + message + \" result: \" + result)\n  }else {\n    def content = result\n    log.info(\"req body is : $content\")\n  }\n  \n  Map updateData = Maps.newHashMap();\n  updateData.put(\"token__c\", webhookToken);\n  updateData.put(\"webhookUrl__c\", webhookUrl);\n  \n  // UpdateAttribute attribute = UpdateAttribute.builder().triggerWorkflow(true).build()\n  def (Boolean err, Map data, String errMessage)  = Fx.object.update(apiName, keyId, updateData,UpdateAttribute.builder().triggerWorkflow(true).build())\n  if (err) {\n      log.error(\"获取对象异常\" + errMessage)\n  }\n  else {\n      log.info(\"update data is : $data\")\n  }\n  \n  UIAction alertAction = AlertAction.builder()\n      .type(\"default\")\n      .text(\"The Webhook URL Generated Success.\")\n      .build()\n  return alertAction\n} else {\n  UIAction alertAction = AlertAction.builder()\n      .type(\"default\")\n      .text(\"The Webhook URL has been generated already.\")\n      .build()\n  return alertAction\n}\n// Return the AlertAction\n",
+        "updateTime": 1766978714433,
+        "bindingObjectApiName": "WebhookURL__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "TestPushFunction",
+        "apiName": "TestPushFunction__c",
+        "content": "log.info('success!');",
+        "updateTime": 1766978711891,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "TestNamespaceReturnFunction",
+        "apiName": "TestNamespaceReturnFunction__c",
+        "content": "log.info('success!');",
+        "updateTime": 1766978709514,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "MyButtonAction",
+        "apiName": "MyButtonAction__c",
+        "content": "log.info('success!');",
+        "updateTime": 1766978707130,
+        "bindingObjectApiName": "AccountObj",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "LunchSignService",
+        "apiName": "LunchSignService__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName LunchSignService\n * @description Lunch Sign Service\n * @createTime 2025-10-11\n * @bindingObjectLabel Service Report ESignature\n * @bindingObjectApiName adobe_sign__c\n * @函数需求编号\n */\n    String key = ESignInfo.getKey();\n    log.info(key)\n    String baseUrl = ESignInfo.getBaseURL();\n    log.info(baseUrl)\n    \n    String keyId = context.data._id as String;\n    String innerMail = context.data.employee_email__c as String;\n    String innerName = context.data.employee_name__c as String;\n    \n    Map serviceReport = context.data.sign_file__c as Map\n    log.info(\"serviceReport:\" + serviceReport[0]['path']);\n    String nPath = context.data.npath__c as String;\n    \n    //  1. Transient Documents\n    String filePath = serviceReport[0]['path'] as String;\n    String uri = \"/api/rest/v6/transientDocuments\"\n    \n    String transientDocumentId = ESTransientDocService.uploadAndGetTransientId(baseUrl,key,filePath,nPath,uri)\n    \n    log.info(\"transientDocumentId:\" + transientDocumentId)\n    \n    // 更新adobe sign 的transientDocumentId\n    Map objectMap = [\"multi_line_text__c\": transientDocumentId]\n    Map resultBBB = Fx.object.update(\"adobe_sign__c\", keyId, objectMap, null, ActionAttribute.create()).result(); \n    log.info(\"=====resultBBB=====\" + resultBBB)\n\n    log.info(\"1. Transient Documents  send  end>>>>>>>>>>>>>>>>>>>\")\n      \n      \n     // 2. create agreement \n\n    // 协议头名称\n    String signName = \"MyTestAgreement\"\n    String agreementURI = \"/api/rest/v6/agreements\"\n    \n    //outter mail attach\n    \n    List outterSingers = context.data.signers_name__c as List \n    \n    // String contactEmailStrs = \"\";\n    List participantOuterSetsInfoList =[]\n    //遍历 outterSingers\n    if (outterSingers) {\n      \n      outterSingers.each {\n        item ->\n        log.info(item)\n        \n        //客户联系人\n        String contact_id = item\n        \n        //根据主键contact_id查询联系人对象ContactObj数据\n        \n        APIResult contactRet = Fx.object.findOne(\n          \"ContactObj\",\n          FQLAttribute.builder()\n            .columns([\"_id\", \"name\", \"email\"])\n            .queryTemplate(QueryTemplate.AND([\"_id\": QueryOperator.EQ(contact_id)]))\n            .build(),\n          SelectAttribute.builder()\n            .build()\n        );\n        if (contactRet.isError()) {\n          log.info(contactRet.message());\n        }\n        \n        //联系人邮箱\n        String email = contactRet.data[\"email\"] as String\n        String name = contactRet.data[\"name\"] as String\n            \n        List outterMembersList = []\n        \n        Map outterEmailMap = [:]\n        \n        outterEmailMap.put(\"email\",email)  \n        outterMembersList.add(outterEmailMap)\n        \n        Map participantOutterMap = [:]\n        \n        participantOutterMap.put(\"order\",1)\n        participantOutterMap.put(\"role\",\"SIGNER\")\n        participantOutterMap.put(\"name\",name)\n        participantOutterMap.put(\"memberInfos\",outterMembersList)\n        participantOuterSetsInfoList.add(participantOutterMap)\n        \n      }\n    }\n    \n    //提交合约并获取ID\n    String agreementId = ESAgreementService.createAgreement(signName,\n                                                            baseUrl,\n                                                            key,\n                                                            agreementURI,\n                                                            transientDocumentId,\n                                                            innerMail,\n                                                            innerName,\n                                                            participantOuterSetsInfoList\n                                                            ); \n    \n    log.info(\"agreementId:\" + agreementId)\n    \n     // 更新adobe sign 的agreementId\n    def objectMapCCC = [\"agreementId__c\": agreementId,\"signature_status__c\": \"In Progress\"]\n    def resultCCC = Fx.object.update(\"adobe_sign__c\", keyId, objectMapCCC, null, ActionAttribute.create()).result() as Map\n    log.info(\"resultCCC:\" + resultCCC)",
+        "updateTime": 1766978704597,
+        "bindingObjectApiName": "adobe_sign__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "void",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "GetESigningUrl",
+        "apiName": "GetESigningUrl__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName GetESigningUrl\n * @description 获取电子签url链接\n * @createTime 2025-10-11\n * @bindingObjectLabel Service Report ESignature\n * @bindingObjectApiName adobe_sign__c\n * @函数需求编号\n */\nString apiName = context.data.object_describe_api_name as String;\n    \n    String esignUrl = \"\";\n    \n    String key = ESignInfo.getKey();\n    log.info(key)\n    String baseUrl = ESignInfo.getBaseURL();\n    log.info(baseUrl)\n    String uri = \"/api/rest/v6/agreements/\";\n    log.info(uri)\n    String agreementId = \"\";\n    \n    if (apiName == 'adobe_sign__c') {\n\n      agreementId = context.data.agreementId__c;\n      \n    } else if (apiName == \"reportability__c\") {\n      \n      agreementId = context.data.agreementId__c;\n      \n    }\n    \n    if (agreementId) {\n      \n      log.info(\"get  signingUrls >>>>>>>>>>>>>>>> \")\n      \n      esignUrl = ESAgreementService.getAgreementURL(baseUrl,key,uri,agreementId)\n      \n      log.info(\"esignUrl:\" + esignUrl)\n  \n    }\n\n    String source = Fx.utils.getRequestSource()\n    Fx.log.info(source)\n    UIAction action = null\n    if( source == \"WEB\" ) {\n      //web端返回 WebAction\n      action = WebAction.builder()\n        .type('url')//组件类型是 跳转 url\n        .url(esignUrl)//跳转的 url 地址\n        .build()\n    } else {\n      //移动端需要返回AppAction\n      action = AppAction.builder() \n        .url(esignUrl)\n        .build()\n    }\n    \n    return action",
+        "updateTime": 1766978700837,
+        "bindingObjectApiName": "adobe_sign__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "ES Fetch Docusign File",
+        "apiName": "FetchDocusignFile__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName 测试请求\n * @description 测试请求\n * @createTime 2025-10-17\n * @bindingObjectLabel ESign记录表\n * @bindingObjectApiName ESign_Record__c\n * @函数需求编号\n */\n    String apiName = context.data.object_describe_api_name as String;\n    String keyId = context.data._id as String;\n\n    ESignInfo.configName = \"Docusign\"\n    String key = DocuSignAuth.getAccessToken() as String\n    log.info \"accessToken:$key\"\n    String baseUrl = ESignInfo.getBaseURL();\n    log.info(baseUrl)\n    String accountId = ESignInfo.getAccountId()\n    log.info \"AccountId:$accountId\"\n    //获取附件信息\n    String agreementId = context.data.agreementId__c as String;\n    String uri = \"/restapi/v2.1/accounts/\"+accountId\n    Map fileUrlMap = ESAgreementService.getAgreementDocuSignedFileURL(baseUrl,key,uri,agreementId)\n    // 将获取的附件构建并上传到文件服务器\n    Object xmap = fileUrlMap[1] as Object\n    String path = xmap[\"path\"] as String\n    String size = xmap[\"size\"] as String\n    String fileName = context.data.npath__c as String\n    String extensionName = \"pdf\"\n    \n\n    List fileInfo = [[\"path\":path,\"size\":size,\"ext\":extensionName,\"filename\": fileName+\".\"+extensionName]]\n    //更新上传附件\n    Map updateData = Maps.newHashMap();\n    updateData.put(\"finalfile__c\", fileInfo);\n    updateData.put(\"sign_status__c\", \"Completed\");\n\n    UpdateAttribute attribute = UpdateAttribute.builder().triggerWorkflow(true).build();\n    \n    def result = Fx.object.update(apiName, keyId, updateData,attribute).result() as Map\n    log.info(\"result:\" + result)\n    \n    UIAction alertAction = AlertAction.builder()\n      .type(\"default\")\n      .text(\"Signed Docs Fetched Success!\")\n      .build()\n    \n    // Return the AlertAction\n    return alertAction",
+        "updateTime": 1766978698279,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "ES AcrobatSign URL Service",
+        "apiName": "ESignURLService__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName GetESigningUrl\n * @description 获取电子签url链接\n * @createTime 2025-10-11\n * @bindingObjectLabel Service Report ESignature\n * @bindingObjectApiName adobe_sign__c\n * @函数需求编号\n */\nString apiName = context.data.object_describe_api_name as String;\n    \n    String esignUrl = \"\";\n    ESignInfo.configName = \"Adobe Sign\"\n    String key = ESignInfo.getKey();\n    log.info(key)\n    String baseUrl = ESignInfo.getBaseURL();\n    log.info(baseUrl)\n    String uri = \"/api/rest/v6/agreements/\";\n    log.info(uri)\n    String agreementId = \"\";\n    \n    if (apiName == 'ESign_Record__c') {\n\n      agreementId = context.data.agreementId__c;\n      \n    } else if (apiName == \"reportability__c\") {\n      \n      agreementId = context.data.agreementId__c;\n      \n    }\n    \n    if (agreementId) {\n      \n      log.info(\"get  signingUrls >>>>>>>>>>>>>>>> \")\n      \n      esignUrl = ESAgreementService.getAgreementURL(baseUrl,key,uri,agreementId)\n      \n      log.info(\"esignUrl:\" + esignUrl)\n  \n    }\n\n    String source = Fx.utils.getRequestSource()\n    Fx.log.info(source)\n    UIAction action = null\n    if( source == \"WEB\" ) {\n      //web端返回 WebAction\n      action = WebAction.builder()\n        .type('url')//组件类型是 跳转 url\n        .url(esignUrl)//跳转的 url 地址\n        .build()\n    } else {\n      //移动端需要返回AppAction\n      action = AppAction.builder() \n        .url(esignUrl)\n        .build()\n    }\n    \n    return action",
+        "updateTime": 1766978695873,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "ES AcrobatSign Service",
+        "apiName": "ESignService__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName LunchSignService\n * @description Lunch Sign Service\n * @createTime 2025-10-11\n * @bindingObjectLabel Service Report ESignature\n * @bindingObjectApiName adobe_sign__c\n * @函数需求编号\n */\n    ESignInfo.configName = 'Adobe Sign';\n    String key = ESignInfo.getKey();\n    log.info(key)\n    String baseUrl = ESignInfo.getBaseURL();\n    log.info(baseUrl)\n    List signers = context.data.signers__c as List \n    String keyId = context.data._id as String;\n    String innerMail = context.data.initiator_email__c as String;\n    String innerName = context.data.initiator_name__c as String;\n\n    Map serviceReport = context.data.sign_file__c as Map\n    log.info(\"serviceReport:\" + serviceReport[0]['path']);\n    String nPath = context.data.npath__c as String;\n    \n    //  1. Transient Documents\n    String filePath = serviceReport[0]['path'] as String;\n    String uri = \"/api/rest/v6/transientDocuments\"\n    \n    String transientDocumentId = ESTransientDocService.uploadAndGetTransientId(baseUrl,key,filePath,nPath,uri)\n    \n    log.info(\"transientDocumentId:\" + transientDocumentId)\n    \n    // 更新adobe sign 的transientDocumentId\n    Map objectMap = [\"transitDocId__c\": transientDocumentId]\n    Integer c = signers.size() as Integer\n    objectMap.put(\"signersCount__c\",c.toString())\n    Map resultBBB = Fx.object.update(\"ESign_Record__c\", keyId, objectMap, null, ActionAttribute.create()).result(); \n    log.info(\"=====resultBBB=====\" + resultBBB)\n\n    log.info(\"1. Transient Documents  send  end>>>>>>>>>>>>>>>>>>>\")\n      \n      \n     // 2. create agreement \n\n    // 协议头名称\n    String signName = nPath\n    String agreementURI = \"/api/rest/v6/agreements\"\n    \n    //outter mail attach\n    \n    List outterSingers = signers \n    \n    // String contactEmailStrs = \"\";\n    List participantOuterSetsInfoList =[]\n    //遍历 outterSingers\n    if (outterSingers) {\n      \n      outterSingers.each {\n        item ->\n        log.info(item)\n        \n        //客户联系人\n        String contact_id = item\n        \n        //根据主键contact_id查询联系人对象ContactObj数据\n        \n        APIResult contactRet = Fx.object.findOne(\n          \"ContactObj\",\n          FQLAttribute.builder()\n            .columns([\"_id\", \"name\", \"email\"])\n            .queryTemplate(QueryTemplate.AND([\"_id\": QueryOperator.EQ(contact_id)]))\n            .build(),\n          SelectAttribute.builder()\n            .build()\n        );\n        if (contactRet.isError()) {\n          log.info(contactRet.message());\n        }\n        \n        //联系人邮箱\n        String email = contactRet.data[\"email\"] as String\n        String name = contactRet.data[\"name\"] as String\n            \n        List outterMembersList = []\n        \n        Map outterEmailMap = [:]\n        \n        outterEmailMap.put(\"email\",email)  \n        outterMembersList.add(outterEmailMap)\n        \n        Map participantOutterMap = [:]\n        \n        participantOutterMap.put(\"order\",1)\n        participantOutterMap.put(\"role\",\"SIGNER\")\n        participantOutterMap.put(\"name\",name)\n        participantOutterMap.put(\"memberInfos\",outterMembersList)\n        participantOuterSetsInfoList.add(participantOutterMap)\n        \n      }\n    }\n    \n    //提交合约并获取ID\n    String agreementId = ESAgreementService.createAgreement(signName,\n                                                            baseUrl,\n                                                            key,\n                                                            agreementURI,\n                                                            transientDocumentId,\n                                                            innerMail,\n                                                            innerName,\n                                                            participantOuterSetsInfoList\n                                                            ); \n    \n    log.info(\"agreementId:\" + agreementId)\n    \n     // 更新adobe sign 的agreementId\n    def objectMapCCC = [\"agreementId__c\": agreementId,\"sign_status__c\": \"In Progress\"]\n    def resultCCC = Fx.object.update(\"ESign_Record__c\", keyId, objectMapCCC, null, ActionAttribute.create()).result() as Map\n    log.info(\"resultCCC:\" + resultCCC)",
+        "updateTime": 1766978693251,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "void",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "ESignFetchSignedDoc",
+        "apiName": "ESignFetchSignedDoc__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName 测试请求\n * @description 测试请求\n * @createTime 2025-10-17\n * @bindingObjectLabel ESign记录表\n * @bindingObjectApiName ESign_Record__c\n * @nameSpace button\n * @returnType UIAction\n * @函数需求编号\n */\n    String apiName = context.data.object_describe_api_name as String;\n    String keyId = context.data._id as String;\n\n    ESignInfo.configName = 'Adobe Sign';\n    String key = ESignInfo.getKey();\n    log.info(key)\n    String baseUrl = ESignInfo.getBaseURL();\n    log.info(baseUrl)\n    \n    String agreementId = context.data.agreementId__c as String;\n    String uri = \"/api/rest/v6\";\n    Map fileUrlMap = ESAgreementService.getAgreementAcrobatSignedFileURL(baseUrl,key,uri,agreementId)\n    // 将获取的附件构建并上传到文件服务器\n    Object xmap = fileUrlMap[1] as Object\n    String path = xmap[\"path\"] as String\n    String size = xmap[\"size\"] as String\n    String fileName = context.data.npath__c as String\n    String extensionName = \"pdf\"\n    List fileInfo = [[\"path\":path,\"size\":size,\"ext\":extensionName,\"filename\": fileName+\".\"+extensionName]]\n    \n    Map updateData = Maps.newHashMap();\n    updateData.put(\"finalfile__c\", fileInfo);\n\n    UpdateAttribute attribute = UpdateAttribute.builder().triggerWorkflow(true).build();\n    \n    def result = Fx.object.update(apiName, keyId, updateData,attribute).result() as Map\n    log.info(\"result:\" + result)\n    \n    UIAction alertAction = AlertAction.builder()\n      .type(\"default\")\n      .text(\"Signed Docs Fetched Success!\")\n      .build()\n    \n    // Return the AlertAction\n    return alertAction",
+        "updateTime": 1766978690360,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "ES DocuSign URL Service",
+        "apiName": "DocuSignUrlService__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName GetESigningUrl\n * @description 获取电子签url链接\n * @createTime 2025-10-11\n * @bindingObjectLabel Service Report ESignature\n * @bindingObjectApiName adobe_sign__c\n * @函数需求编号\n */\nString apiName = context.data.object_describe_api_name as String;\n    \n    String esignUrl = \"\";\n    \n    ESignInfo.configName = \"Docusign\"\n    String key = DocuSignAuth.getAccessToken() as String\n    log.info \"accessToken:$key\"\n    String baseUrl = ESignInfo.getBaseURL()\n    log.info \"baseUrl:$baseUrl\"\n    String accountId = ESignInfo.getAccountId()\n    log.info \"AccountId:$accountId\"\n    //获取附件信息\n    String inemail = context.data.initiator_email__c as String;\n    String inname = context.data.initiator_name__c as String;\n    String agreementId = context.data.agreementId__c as String;\n    String uri = \"/restapi/v2.1/accounts/\"+accountId+\"/envelopes/\"+agreementId+\"/views/recipient\";\n    log.info(uri)\n    \n    \n    if (agreementId) {\n      \n      log.info(\"get  signingUrls >>>>>>>>>>>>>>>> \")\n      Map bodyMap = [:]\n      bodyMap.put(\"authenticationMethod\",\"none\")\n      bodyMap.put(\"email\",inemail)\n      bodyMap.put(\"userName\",inname)\n      bodyMap.put(\"clientUserId\",\"1\")\n      bodyMap.put(\"returnUrl\",\"https://www.fxiaoke.com\")\n      \n      esignUrl = ESAgreementService.getDocusignAgreementURL(baseUrl,key,uri,bodyMap)\n      \n  \n    }\n\n    String source = Fx.utils.getRequestSource()\n    Fx.log.info(source)\n    UIAction action = null\n    if( source == \"WEB\" ) {\n      //web端返回 WebAction\n      action = WebAction.builder()\n        .type('url')//组件类型是 跳转 url\n        .url(esignUrl)//跳转的 url 地址\n        .build()\n    } else {\n      //移动端需要返回AppAction\n      action = AppAction.builder() \n        .url(esignUrl)\n        .build()\n    }\n    \n    return action",
+        "updateTime": 1766978687902,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "UIAction",
+        "tenantId": "67000207",
+        "lang": 0
+      },
+      {
+        "name": "ES DocuSign Service",
+        "apiName": "DocuSignService__c",
+        "content": "/**\n * @author 彭黄振Jame\n * @codeName LunchSignService\n * @description Lunch Sign Service\n * @createTime 2025-10-11\n * @bindingObjectLabel Service Report ESignature\n * @bindingObjectApiName adobe_sign__c\n * @函数需求编号\n */\n\n    \n    ESignInfo.configName = \"Docusign\"\n    String key = DocuSignAuth.getAccessToken() as String\n    log.info \"accessToken:$key\"\n    String baseUrl = ESignInfo.getBaseURL()\n    log.info \"baseUrl:$baseUrl\"\n    String accountId = ESignInfo.getAccountId()\n    log.info \"AccountId:$accountId\"\n    \n    List signers = context.data.signers__c as List \n    String keyId = context.data._id as String;\n    String innerMail = context.data.initiator_email__c as String;\n    String innerName = context.data.initiator_name__c as String;\n\n    Map serviceReport = context.data.sign_file__c as Map\n    log.info(\"serviceReport:\" + serviceReport[0]['path']);\n    String nPath = context.data.npath__c as String;\n    \n    String agreementId = \"\"\n    \n    //  1. Transient Documents\n    String filePath = serviceReport[0]['path'] as String;\n    String uri = \"/restapi/v2.1/accounts/\"+accountId+\"/envelopes\"\n    List participants = signers \n    Integer num = 1\n    def signer = [\n                      email       : innerMail,\n                      name        : innerName,\n                      recipientId : num as String,\n                      routingOrder: num as String,\n                      tabs        : [\n                          signHereTabs: [          // 注意：这里是 List\n                              [\n                                  anchorString : '/sig1/',\n                                  anchorYOffset: '10',\n                                  anchorXOffset: '20'\n                              ]\n                          ]\n                      ]\n                  ]\n    List recipientList = [signer]\n    \n    if( participants ){\n      \n        participants.each{\n            item->\n            //客户联系人\n            String contact_id = item\n            num++\n            //根据主键contact_id查询联系人对象ContactObj数据\n            \n            APIResult contactRet = Fx.object.findOne(\n              \"ContactObj\",\n              FQLAttribute.builder()\n                .columns([\"_id\", \"name\", \"email\"])\n                .queryTemplate(QueryTemplate.AND([\"_id\": QueryOperator.EQ(contact_id)]))\n                .build(),\n              SelectAttribute.builder()\n                .build()\n            );\n            if (contactRet.isError()) {\n              log.info(contactRet.message());\n            }\n            \n            //联系人邮箱\n            String email1 = contactRet.data[\"email\"] as String\n            String name1 = contactRet.data[\"name\"] as String\n            // String contId = contactRet.data[\"_id\"] as String\n            recipientList.add([\n                          email       : email1,\n                          name        : name1,\n                          recipientId : num as String,\n                          routingOrder: num as String,\n                          tabs        : [\n                              signHereTabs: [          // 注意：这里是 List\n                                  [\n                                      anchorString : '/sig1/',\n                                      anchorYOffset: '10',\n                                      anchorXOffset: '20'\n                                  ]\n                              ]\n                          ]\n              ])\n          \n        }\n    }\n    \n    def envelopeJson = [\n        emailSubject: '请签署'+nPath,\n        documents: [[\n            documentId: '1',\n            name: nPath\n        ]],\n        recipients: [\n            signers: recipientList\n        ],\n        status: 'sent'\n    ] as Map\n    log.info \"envelopeJson:$envelopeJson\"\n    \n    agreementId = ESTransientDocService.uploadAndGetDocusignTransientId(baseUrl,key,filePath,nPath,uri,envelopeJson)\n    \n    log.info(\"agreementId:\" + agreementId)\n    \n    // 更新adobe sign 的agreementId\n    def objectMapCCC = [\"agreementId__c\": agreementId,\"sign_status__c\": \"In Progress\",\"signersCount__c\":num]\n    def resultCCC = Fx.object.update(\"ESign_Record__c\", keyId, objectMapCCC, null, ActionAttribute.create()).result() as Map\n    log.info(\"resultCCC:\" + resultCCC)\n    \n    ",
+        "updateTime": 1766978685363,
+        "bindingObjectApiName": "ESign_Record__c",
+        "type": "function",
+        "nameSpace": "button",
+        "returnType": "void",
+        "tenantId": "67000207",
+        "lang": 0
+      }
+    ]
+  }
+}

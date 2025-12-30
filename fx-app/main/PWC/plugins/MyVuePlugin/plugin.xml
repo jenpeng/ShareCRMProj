@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PluginBundle>
+  <scopeObjects>
+    <object>ALL</object>
+  </scopeObjects>
+  <description>这个是描述</description>
+  <client>web</client>
+  <entryFileName>entry.js</entryFileName>
+  <type>list_plugin</type>
+</PluginBundle>

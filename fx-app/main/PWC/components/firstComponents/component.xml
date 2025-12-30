@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ComponentBundle>
+  <scopes>
+    <scope target="ObjectDetailPage">*</scope>
+    <scope target="CRMHomePage">*</scope>
+    <scope target="PortalPage">*</scope>
+  </scopes>
+  <clients>
+    <client>web</client>
+    <client>app</client>
+  </clients>
+  <description></description>
+  <entryFileName>entry.vue</entryFileName>
+  <type>vue</type>
+</ComponentBundle>
